@@ -3,6 +3,7 @@ package com.gpetuhov.android.samplefcm;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public class MainFragment extends Fragment {
+
+    private static final String LOG_TAG = MainFragment.class.getName();
 
     // Displays message text on screen
     @BindView(R.id.message_text) TextView mMessageTextView;
@@ -63,10 +66,17 @@ public class MainFragment extends Fragment {
         mUnbinder.unbind();
     }
 
-    // Called when a message is received (in the UI thread)
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    // Called when a message is received (in the UI thread).
+    // During registration all sticky subscriber methods will immediately get the previously posted sticky event.
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onMessageReceived(MessageReceivedEvent messageReceivedEvent) {
+
+        Log.d(LOG_TAG, "Displaying message in TextView");
+
         // Get message text from the event and display in TextView
         mMessageTextView.setText(messageReceivedEvent.getText());
+
+        // Remove (consume) sticky event so that it won’t be delivered anymore
+        EventBus.getDefault().removeStickyEvent(messageReceivedEvent);
     }
 }
